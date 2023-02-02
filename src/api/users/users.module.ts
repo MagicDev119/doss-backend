@@ -1,13 +1,18 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './users.controller';
 import { UsersService } from  './users.service';
-import UserSchema from './model/user.schema';
 import { SharedModule } from '../shared/shared.module';
+import { Users } from 'src/typeorm';
+import { Profiles } from 'src/typeorm';
+import { Plans } from 'src/typeorm';
+import { UsersPlans } from 'src/typeorm';
+import { Referrals } from 'src/typeorm';
+import { Stripe } from 'src/typeorm';
 
 @Module({
     imports: [
-        MongooseModule.forFeature([{name: "User", schema: UserSchema}]),
+        TypeOrmModule.forFeature([Users, Profiles, Plans, UsersPlans, Referrals, Stripe]),
         SharedModule
     ],
     providers: [UsersService],

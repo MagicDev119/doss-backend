@@ -8,22 +8,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RestaurantsModule = void 0;
 const common_1 = require("@nestjs/common");
-const mongoose_1 = require("@nestjs/mongoose");
+const typeorm_1 = require("@nestjs/typeorm");
 const restaurants_service_1 = require("./restaurants.service");
 const restaurants_controller_1 = require("./restaurants.controller");
-const restaurant_schema_1 = require("./model/restaurant.schema");
 const shared_module_1 = require("../shared/shared.module");
 const users_module_1 = require("../users/users.module");
-const user_offer_schema_1 = require("./model/user-offer.schema");
+const typeorm_2 = require("../../typeorm");
+const typeorm_3 = require("../../typeorm");
+const typeorm_4 = require("../../typeorm");
 let RestaurantsModule = class RestaurantsModule {
 };
 RestaurantsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([
-                { name: "Restaurant", schema: restaurant_schema_1.default },
-                { name: "UserOffer", schema: user_offer_schema_1.default },
-            ]),
+            typeorm_1.TypeOrmModule.forFeature([typeorm_2.Restaurants, typeorm_3.Offers, typeorm_4.UsersOffers]),
             (0, common_1.forwardRef)(() => users_module_1.UsersModule),
             shared_module_1.SharedModule
         ],

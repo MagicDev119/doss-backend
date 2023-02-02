@@ -41,11 +41,11 @@ let EventsController = class EventsController {
     }
     async changeEventState(id, req, body) {
         const userId = req.user.id;
-        return this.eventsService.changeState(id, userId, +body.state);
+        return this.eventsService.changeState(parseInt(id), userId, +body.state);
     }
     async cancelAttendEvent(attendId, req) {
         const userId = req.user.id;
-        return this.eventsService.cancelAttend(attendId, userId);
+        return this.eventsService.cancelAttend(parseInt(attendId), userId);
     }
 };
 __decorate([

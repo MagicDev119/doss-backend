@@ -8,19 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventsModule = void 0;
 const common_1 = require("@nestjs/common");
-const mongoose_1 = require("@nestjs/mongoose");
+const typeorm_1 = require("@nestjs/typeorm");
 const events_service_1 = require("./events.service");
 const events_controller_1 = require("./events.controller");
 const shared_module_1 = require("../shared/shared.module");
-const event_schema_1 = require("./model/event.schema");
 const users_module_1 = require("../users/users.module");
-const event_attend_schema_1 = require("./model/event-attend.schema");
+const typeorm_2 = require("../../typeorm");
+const typeorm_3 = require("../../typeorm");
 let EventsModule = class EventsModule {
 };
 EventsModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: "Event", schema: event_schema_1.default }, { name: 'EventAttend', schema: event_attend_schema_1.default }]),
+            typeorm_1.TypeOrmModule.forFeature([typeorm_2.Events, typeorm_3.UsersEvents]),
             (0, common_1.forwardRef)(() => users_module_1.UsersModule),
             shared_module_1.SharedModule
         ],

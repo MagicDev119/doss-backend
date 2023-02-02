@@ -14,12 +14,13 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CouponService = void 0;
 const common_1 = require("@nestjs/common");
-const mongoose_1 = require("mongoose");
-const mongoose_2 = require("@nestjs/mongoose");
+const typeorm_1 = require("../../typeorm");
 const users_service_1 = require("../users/users.service");
+const typeorm_2 = require("@nestjs/typeorm");
+const typeorm_3 = require("typeorm");
 let CouponService = class CouponService {
-    constructor(couponModel, usersService) {
-        this.couponModel = couponModel;
+    constructor(referralsRepository, usersService) {
+        this.referralsRepository = referralsRepository;
         this.usersService = usersService;
     }
     create(createCouponDto) {
@@ -32,7 +33,7 @@ let CouponService = class CouponService {
         return `This action returns a #${id} coupon`;
     }
     async findOneByCode(customer) {
-        const coupon = await this.couponModel.findOne({ code: customer.code });
+        const coupon = await this.referralsRepository.findOneBy({ code: customer.code });
         if (!coupon) {
             return { status: -3, error: 'Invalid coupon' };
         }
@@ -47,8 +48,8 @@ let CouponService = class CouponService {
 };
 CouponService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_2.InjectModel)('Coupon')),
-    __metadata("design:paramtypes", [mongoose_1.Model,
+    __param(0, (0, typeorm_2.InjectRepository)(typeorm_1.Referrals)),
+    __metadata("design:paramtypes", [typeorm_3.Repository,
         users_service_1.UsersService])
 ], CouponService);
 exports.CouponService = CouponService;

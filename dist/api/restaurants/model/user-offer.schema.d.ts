@@ -4,8 +4,8 @@ declare const UserOfferSchema: mongoose.Schema<any, mongoose.Model<any, any, any
         virtuals: boolean;
     };
 }>, {
-    status: number;
     user: mongoose.Types.ObjectId;
     restaurant: mongoose.Types.ObjectId;
+    status: number;
 }>;
 export default UserOfferSchema;

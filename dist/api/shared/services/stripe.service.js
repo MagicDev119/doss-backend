@@ -131,6 +131,7 @@ let StripeService = class StripeService {
             }
         }
         catch (error) {
+            console.log(error);
             return { status: 0, message: 'can\'t find your data' };
         }
     }

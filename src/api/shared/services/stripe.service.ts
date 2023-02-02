@@ -148,6 +148,8 @@ export default class StripeService {
         return { status: 0, message: 'subscription record doesn\'t match the customer' };
       }
     } catch (error) {
+    console.log(error)
+
       return { status: 0, message: 'can\'t find your data' };
     }
   }

@@ -11,7 +11,6 @@ const common_1 = require("@nestjs/common");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 const charge_module_1 = require("./charge/charge.module");
-const shared_module_1 = require("./shared/shared.module");
 const coupon_module_1 = require("./coupon/coupon.module");
 const events_module_1 = require("./events/events.module");
 const restaurants_module_1 = require("./restaurants/restaurants.module");
@@ -25,7 +24,6 @@ ApiModule = __decorate([
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             charge_module_1.ChargeModule,
-            shared_module_1.SharedModule,
             coupon_module_1.CouponModule,
             seed_module_1.default,
             events_module_1.EventsModule,

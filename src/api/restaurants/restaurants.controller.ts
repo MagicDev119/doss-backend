@@ -58,6 +58,6 @@ export class RestaurantsController {
   @Post('/:id/activate')
   async activateOffer(@Param('id') id: string, @Req() req: any) {
     const userId = req.user.id;
-    return this.restaurantsService.activate(id, userId);
+    return this.restaurantsService.activate(+id, userId);
   }
 }

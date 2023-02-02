@@ -14,25 +14,53 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventsService = void 0;
 const common_1 = require("@nestjs/common");
-const mongoose_1 = require("@nestjs/mongoose");
-const mongoose_2 = require("mongoose");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const users_service_1 = require("../users/users.service");
+const typeorm_3 = require("../../typeorm");
+const typeorm_4 = require("../../typeorm");
 let EventsService = class EventsService {
-    constructor(eventModel, eventAttendModel, usersService) {
-        this.eventModel = eventModel;
-        this.eventAttendModel = eventAttendModel;
+    constructor(eventsRepository, usersEventsRepository, usersService) {
+        this.eventsRepository = eventsRepository;
+        this.usersEventsRepository = usersEventsRepository;
         this.usersService = usersService;
     }
     async create(createEventDto) {
-        const res = await this.eventModel.create(createEventDto);
-        return { status: 1, data: res, message: 'success' };
+        const newEvent = this.eventsRepository.create({
+            title: createEventDto.name,
+            description: createEventDto.description,
+            image_path: createEventDto.image,
+            start_at: createEventDto.eventDate
+        });
+        await this.eventsRepository.save(newEvent);
+        return { status: 1, data: newEvent, message: 'success' };
     }
     async findAll(userId = null) {
-        const allEvents = await this.eventModel.find().sort({ available: -1 }).lean().exec();
+        const allEvents = await this.eventsRepository.find();
         let temp = [];
         for (let e of allEvents) {
-            const eventAttends = await this.eventAttendModel.find({ event: e._id, attendee: userId });
-            const t = Object.assign(Object.assign({}, e), { id: e._id, attendId: eventAttends.length ? eventAttends[0]._id : '', attended: eventAttends.length ? eventAttends[0].status : 0 });
+            const eventAttends = await this.usersEventsRepository.find({
+                relations: ['event', 'user'],
+                where: {
+                    event: {
+                        id: e.id
+                    },
+                    user: {
+                        id: userId
+                    }
+                }
+            });
+            const t = {
+                createdAt: e.created_at,
+                description: e.description,
+                eventDate: e.start_at,
+                name: e.title,
+                image: e.image_path,
+                id: e.id,
+                available: eventAttends.length ? eventAttends[0].is_attending : false,
+                attendId: eventAttends.length ? eventAttends[0].id : '',
+                attended: eventAttends.length ? eventAttends[0].is_attending : 0
+            };
             temp.push(t);
         }
         return {
@@ -45,7 +73,12 @@ let EventsService = class EventsService {
         return `This action returns a #${id} event`;
     }
     async findByEventId(eventId) {
-        const event = await this.eventModel.findById(eventId);
+        const event = await this.eventsRepository.findOne({
+            where: {
+                id: eventId,
+            },
+            relations: []
+        });
         if (!event)
             throw new common_1.BadRequestException('Event Not found');
         return event;
@@ -57,43 +90,37 @@ let EventsService = class EventsService {
         return `This action removes a #${id} event`;
     }
     async countEventAttendByID(userId, eventId) {
-        const eventAttend = await this.eventAttendModel.find({
-            event: eventId
+        const eventAttend = await this.usersEventsRepository.find({
+            relations: ['event'],
+            where: {
+                event: {
+                    id: eventId
+                }
+            }
         });
         return eventAttend.length;
     }
     async changeState(eventId, userId, state) {
         const user = await this.usersService.findByUserId(userId);
         const event = await this.findByEventId(eventId);
-        const newEventAttend = new this.eventAttendModel({
-            event,
-            attendee: user,
-            status: state
+        const newEventAttend = this.usersEventsRepository.create({
+            is_attending: state ? true : false,
         });
-        const eventAttend = await newEventAttend.save();
-        if (state === 1) {
-            const count = await this.countEventAttendByID(userId, eventId);
-            if (count < event.maxAttendees - 1) {
-            }
-            else if (count === event.maxAttendees - 1) {
-                event.available = false;
-            }
-            else {
-                return { status: 0, message: 'you can not attend' };
-            }
-        }
+        newEventAttend.event = event;
+        newEventAttend.user = user;
+        await this.usersEventsRepository.save(newEventAttend);
         return {
             status: 1,
-            data: eventAttend,
+            data: newEventAttend,
             message: 'success'
         };
     }
     async cancelAttend(attendId, userId) {
-        const attend = await this.eventAttendModel.findById(attendId);
+        const attend = await this.usersEventsRepository.findOneBy({ id: attendId });
         if (!attend)
             throw new common_1.BadRequestException('Not found');
-        attend.status = -1;
-        await attend.save();
+        attend.is_attending = false;
+        await await this.usersEventsRepository.save(attend);
         return {
             status: 1,
             data: attend,
@@ -103,11 +130,11 @@ let EventsService = class EventsService {
 };
 EventsService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)('Event')),
-    __param(1, (0, mongoose_1.InjectModel)('EventAttend')),
+    __param(0, (0, typeorm_1.InjectRepository)(typeorm_3.Events)),
+    __param(1, (0, typeorm_1.InjectRepository)(typeorm_4.UsersEvents)),
     __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => users_service_1.UsersService))),
-    __metadata("design:paramtypes", [mongoose_2.Model,
-        mongoose_2.Model,
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         users_service_1.UsersService])
 ], EventsService);
 exports.EventsService = EventsService;

@@ -4,17 +4,16 @@ import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
-// import { UserSchema, User } from './../users/users.schema';
-import UserSchema from '../users/model/user.schema';
 import { JwtStrategy } from './jwt.strategy';
 import { AuthController } from './auth.controller';
 import { JwtRefreshTokenStrategy } from './jwt-refresh-token.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Users } from 'src/typeorm';
 import { TwilioModule } from 'nestjs-twilio';
 @Global()
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: "User", schema: UserSchema }]),
+    TypeOrmModule.forFeature([Users]),
     UsersModule,
     PassportModule,
     JwtModule.register({}),

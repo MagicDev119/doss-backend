@@ -8,12 +8,15 @@ import { TwilioService } from 'nestjs-twilio';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Users } from 'src/typeorm';
+// import { Model } from 'mongoose';
+// import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 // import { User, UserSchema, UserDocument } from './../users/users.schema';
-import { User } from '../shared/types/user';
+// import { User } from '../shared/types/user';
 import { CredentialsDTO, SendLoginCodeDto } from './dto/auth.dto';
 import { UserDTO, UserSignupDTO } from '../users/dto/create-user.dto';
 import { randomCode, validateEmail } from '../shared/utils';
@@ -38,7 +41,7 @@ export class AuthService {
         private jwtService: JwtService,
         private readonly twilioService: TwilioService,
         private configService: ConfigService,
-        @InjectModel('User') private userModel: Model<User>
+        @InjectRepository(Users) private readonly userRepository: Repository<Users>
     ) {
 
     }
@@ -51,15 +54,16 @@ export class AuthService {
         const user = await this.usersService.findOne(email);
         if (!user) throw new NotFoundException('User Not found');
         Logger.log(user)
-        if (!user.emailVerified) throw new BadRequestException('Your email address has not been verified');
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
-            const { password, ...result } = user;
+        if (!user.is_email_verified) throw new BadRequestException('Your email address has not been verified');
+        return user;
+        //     const isMatch = await bcrypt.compare(password, user.password);
+        // if (isMatch) {
+        //     const { password, ...result } = user;
 
-            return result;
-        } else {
-            throw new BadRequestException('Password not matched');
-        }
+        //     return user;
+        // } else {
+        //     throw new BadRequestException('Password not matched');
+        // }
     }
 
     async login(userLoginDto: CredentialsDTO) {
@@ -68,11 +72,11 @@ export class AuthService {
         if (user.verificationCode !== userLoginDto.code)
             return {status: -3, message: 'invalid code'};
 
-        const payload = { email: userLoginDto.phoneNumber, sub: user._id };
+        const payload = { email: userLoginDto.phoneNumber, sub: user.id };
         const sessionTokens = await this.getTokens(payload);
-        await this.usersService.setRefreshToken(sessionTokens.refreshToken, user._id);
-        const { email, id, phoneNumber, fullName, stripeCustomerId, subscriptionPlan, subscriptionStart }  = user;
-
+        await this.usersService.setRefreshToken(sessionTokens.refreshToken, user.id);
+        const { email, id, phone_number, profile, stripes, userPlans }  = user;
+        console.log(userPlans)
         return {
             status: 1,
             token_type: "Bearer",
@@ -80,11 +84,11 @@ export class AuthService {
             user: {
                 email,
                 id,
-                phoneNumber,
-                fullName,
-                stripeCustomerId,
-                subscriptionPlan,
-                subscriptionStart
+                phone_number,
+                fullName: profile.name,
+                stripeCustomerId: stripes[0].customer_id,
+                subscriptionPlan: userPlans[0].plan.description,
+                subscriptionStart: userPlans[0].started_at
             }
         };
     };
@@ -119,31 +123,31 @@ export class AuthService {
         };
     }
 
-    async logout(userId: string) {
+    async logout(userId: number) {
         return this.usersService.update(userId, { refreshToken: null });
     }
 
-    async refreshTokens(userId: string, refreshToken: string) {
+    async refreshTokens(userId: number, refreshToken: string) {
         const user = await this.usersService.findByUserId(userId);
-        if (!user || !user.refreshToken)
-            throw new ForbiddenException('Access Denied');
-        Logger.log(refreshToken);
+        // if (!user || !user.refreshToken)
+        //     throw new ForbiddenException('Access Denied');
+        // Logger.log(refreshToken);
 
-        const refreshTokenMatches = await bcrypt.compare(
-            refreshToken,
-            user.refreshToken
-        );
-        if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+        // const refreshTokenMatches = await bcrypt.compare(
+        //     refreshToken,
+        //     user.refreshToken
+        // );
+        // if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
 
-        const tokens = await this.getTokens({ email: user.email, sub: user._id });
-        await this.usersService.setRefreshToken(tokens.refreshToken, user._id);
+        const tokens = await this.getTokens({ email: user.email, sub: user.id });
+        await this.usersService.setRefreshToken(tokens.refreshToken, user.id);
         return { ...tokens, status: 1 };
     }
 
     async checkEmail(email: string) {
         const user = await this.usersService.findOne(email);
         if (!user) throw new BadRequestException('User not found');
-        if (user.emailVerified) {
+        if (user.is_email_verified) {
             return { status: 1, msg: 'Verified.' }
         }
         return { status: 0, msg: 'Not verified.' }
@@ -161,13 +165,13 @@ export class AuthService {
             throw new BadRequestException(message.errorMessage);
         }
         user.verificationCode = code;
-        await user.save();
-        const { id, verificationCode, phoneNumber } = user;
+        await this.userRepository.save(user)
+        const { id, referral, phone_number } = user;
         return {
             status: 1,
             data: {
                 id,
-                phoneNumber
+                phone_number
             },
             message: 'Verification code sent'
         }

@@ -1,2 +1,3 @@
-import { Coupon } from "../../types/coupon";
-export declare const couponSeedData: Coupon[];
+export declare const couponSeedData: {
+    code: string;
+}[];

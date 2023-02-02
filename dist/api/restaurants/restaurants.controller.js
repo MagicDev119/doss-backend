@@ -40,7 +40,7 @@ let RestaurantsController = class RestaurantsController {
     }
     async activateOffer(id, req) {
         const userId = req.user.id;
-        return this.restaurantsService.activate(id, userId);
+        return this.restaurantsService.activate(+id, userId);
     }
 };
 __decorate([

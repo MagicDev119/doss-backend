@@ -1,9 +1,9 @@
 import { TwilioService } from 'nestjs-twilio';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
+import { Repository } from 'typeorm';
+import { Users } from 'src/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { User } from '../shared/types/user';
 import { CredentialsDTO, SendLoginCodeDto } from './dto/auth.dto';
 import { UserDTO, UserSignupDTO } from '../users/dto/create-user.dto';
 export declare enum SMSType {
@@ -15,8 +15,8 @@ export declare class AuthService {
     private jwtService;
     private readonly twilioService;
     private configService;
-    private userModel;
-    constructor(usersService: UsersService, jwtService: JwtService, twilioService: TwilioService, configService: ConfigService, userModel: Model<User>);
+    private readonly userRepository;
+    constructor(usersService: UsersService, jwtService: JwtService, twilioService: TwilioService, configService: ConfigService, userRepository: Repository<Users>);
     validateUser(email: string, password: string): Promise<any>;
     login(userLoginDto: CredentialsDTO): Promise<{
         status: number;
@@ -35,12 +35,12 @@ export declare class AuthService {
         };
         user: {
             email: string;
-            id: string;
-            phoneNumber: string;
+            id: number;
+            phone_number: string;
             fullName: string;
             stripeCustomerId: string;
             subscriptionPlan: string;
-            subscriptionStart: string;
+            subscriptionStart: Date;
         };
         message?: undefined;
     }>;
@@ -51,8 +51,8 @@ export declare class AuthService {
         refreshToken: string;
         refreshTokenSecondToExpiration: number;
     }>;
-    logout(userId: string): Promise<User>;
-    refreshTokens(userId: string, refreshToken: string): Promise<{
+    logout(userId: number): Promise<Users>;
+    refreshTokens(userId: number, refreshToken: string): Promise<{
         status: number;
         accessToken: string;
         accessTokenSecondToExpiration: number;
@@ -70,8 +70,8 @@ export declare class AuthService {
     } | {
         status: number;
         data: {
-            id: string;
-            phoneNumber: string;
+            id: number;
+            phone_number: string;
         };
         message: string;
     }>;

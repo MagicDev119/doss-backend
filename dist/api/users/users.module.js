@@ -8,17 +8,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersModule = void 0;
 const common_1 = require("@nestjs/common");
-const mongoose_1 = require("@nestjs/mongoose");
+const typeorm_1 = require("@nestjs/typeorm");
 const users_controller_1 = require("./users.controller");
 const users_service_1 = require("./users.service");
-const user_schema_1 = require("./model/user.schema");
 const shared_module_1 = require("../shared/shared.module");
+const typeorm_2 = require("../../typeorm");
+const typeorm_3 = require("../../typeorm");
+const typeorm_4 = require("../../typeorm");
+const typeorm_5 = require("../../typeorm");
+const typeorm_6 = require("../../typeorm");
+const typeorm_7 = require("../../typeorm");
 let UsersModule = class UsersModule {
 };
 UsersModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: "User", schema: user_schema_1.default }]),
+            typeorm_1.TypeOrmModule.forFeature([typeorm_2.Users, typeorm_3.Profiles, typeorm_4.Plans, typeorm_5.UsersPlans, typeorm_6.Referrals, typeorm_7.Stripe]),
             shared_module_1.SharedModule
         ],
         providers: [users_service_1.UsersService],

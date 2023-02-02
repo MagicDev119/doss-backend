@@ -5,8 +5,8 @@ declare const EventSchema: mongoose.Schema<any, mongoose.Model<any, any, any, an
     };
 }>, {
     name: string;
-    description: string;
     eventDate: Date;
+    description: string;
     image: string;
     maxAttendees: number;
     available?: boolean;

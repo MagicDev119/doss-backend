@@ -4,8 +4,8 @@ declare const EventAttendSchema: mongoose.Schema<any, mongoose.Model<any, any, a
         virtuals: boolean;
     };
 }>, {
-    status: number;
-    attendee: mongoose.Types.ObjectId;
     event: mongoose.Types.ObjectId;
+    attendee: mongoose.Types.ObjectId;
+    status: number;
 }>;
 export default EventAttendSchema;

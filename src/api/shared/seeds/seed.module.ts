@@ -1,18 +1,20 @@
 import { Module } from "@nestjs/common";
 import { ScheduleModule } from "@nestjs/schedule";
-import { MongooseModule } from "@nestjs/mongoose";
-
+import { TypeOrmModule } from '@nestjs/typeorm';
 import CouponCodeSeedService from "./services/coupon-code-seed.service";
-import CouponSchema from "src/api/coupon/model/coupon.schema";
-import RestaurantSchema from "src/api/restaurants/model/restaurant.schema";
-import EventSchema from "src/api/events/model/event.schema";
+import { Referrals } from 'src/typeorm';
+import { Restaurants } from 'src/typeorm';
+import { Events } from 'src/typeorm';
+import { Plans } from 'src/typeorm';
+
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: "Coupon", schema: CouponSchema },
-      { name: "Restaurant", schema: RestaurantSchema },
-      { name: "Event", schema: EventSchema }
-    ]),
+    // MongooseModule.forFeature([
+    //   { name: "Coupon", schema: CouponSchema },
+    //   { name: "Restaurant", schema: RestaurantSchema },
+    //   { name: "Event", schema: EventSchema }
+    // ]),
+    TypeOrmModule.forFeature([Restaurants, Referrals, Events, Plans]),
     ScheduleModule.forRoot(),
   ],
   providers: [

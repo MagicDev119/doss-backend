@@ -14,25 +14,62 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RestaurantsService = void 0;
 const common_1 = require("@nestjs/common");
-const mongoose_1 = require("@nestjs/mongoose");
-const mongoose_2 = require("mongoose");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const users_service_1 = require("../users/users.service");
+const typeorm_3 = require("../../typeorm");
+const typeorm_4 = require("../../typeorm");
+const typeorm_5 = require("../../typeorm");
 let RestaurantsService = class RestaurantsService {
-    constructor(restaurantModel, offerModel, usersService) {
-        this.restaurantModel = restaurantModel;
-        this.offerModel = offerModel;
+    constructor(restaurantsRepository, offersRepository, usersOffersRepository, usersService) {
+        this.restaurantsRepository = restaurantsRepository;
+        this.offersRepository = offersRepository;
+        this.usersOffersRepository = usersOffersRepository;
         this.usersService = usersService;
     }
     async create(createRestaurantDto) {
-        const res = await this.restaurantModel.create(createRestaurantDto);
-        return { status: 1, data: res, message: 'success' };
+        const newRestaurant = this.restaurantsRepository.create({
+            name: createRestaurantDto.name,
+            description: createRestaurantDto.description,
+            image_path: createRestaurantDto.image
+        });
+        await this.offersRepository.save(newRestaurant);
+        const newOffer = this.offersRepository.create({
+            title: createRestaurantDto.offer,
+            restaurant: newRestaurant
+        });
+        await this.offersRepository.save(newOffer);
+        return { status: 1, data: newRestaurant, message: 'success' };
     }
     async findAll(userId = null) {
-        const allRestaurants = await this.restaurantModel.find().sort({ status: 1 }).lean().exec();
+        const allRestaurants = await this.restaurantsRepository.find();
         let temp = [];
         for (let r of allRestaurants) {
-            const offers = await this.offerModel.find({ restaurant: r._id, user: userId });
-            const t = Object.assign(Object.assign({}, r), { id: r._id, offerId: offers.length ? offers[0]._id : null, status: offers.length ? 1 : 0 });
+            const offers = await this.usersOffersRepository.find({
+                relations: ['offer', 'user', 'offer.restaurant'],
+                where: {
+                    offer: {
+                        restaurant: {
+                            id: r.id
+                        }
+                    },
+                    user: {
+                        id: userId
+                    }
+                }
+            });
+            const t = {
+                id: r.id,
+                image: r.image_path,
+                name: r.name,
+                description: r.description,
+                available: r.is_enabled,
+                createdAt: r.created_at,
+                expireDate: r.created_at,
+                offer: offers.length ? offers[0].offer.title : "",
+                offerId: offers.length ? offers[0].offer.id : null,
+                status: offers.length ? 1 : 0,
+            };
             temp.push(t);
         }
         return {
@@ -45,7 +82,7 @@ let RestaurantsService = class RestaurantsService {
         return `This action returns a #${id} restaurant`;
     }
     async findByRestaurantId(restaurantId) {
-        const restaurant = await this.restaurantModel.findById(restaurantId);
+        const restaurant = await this.restaurantsRepository.findBy({ id: restaurantId });
         if (!restaurant)
             throw new common_1.BadRequestException('Offer Not found');
         return restaurant;
@@ -59,25 +96,43 @@ let RestaurantsService = class RestaurantsService {
     async activate(restaurantId, userId) {
         const restaurant = await this.findByRestaurantId(restaurantId);
         const user = await this.usersService.findByUserId(userId);
-        const newOffer = new this.offerModel({
-            user,
-            restaurant
+        const restaurantOffer = this.offersRepository.create({
+            title: "",
+            restaurant: restaurant[0]
         });
-        await newOffer.save();
+        await this.offersRepository.save(restaurantOffer);
+        const newUserOffer = this.usersOffersRepository.create({
+            offer: restaurantOffer,
+            user: user
+        });
+        await this.usersOffersRepository.save(newUserOffer);
         return {
             status: 1,
-            data: Object.assign(Object.assign({}, restaurant.toJSON()), { offerId: newOffer._id, status: 1 }),
+            data: {
+                id: restaurant[0].id,
+                image: restaurant[0].image_path,
+                name: restaurant[0].name,
+                description: restaurant[0].description,
+                available: restaurant[0].is_enabled,
+                createdAt: restaurant[0].created_at,
+                expireDate: restaurantOffer.start_at,
+                offer: "",
+                offerId: restaurantOffer.id,
+                status: 1
+            },
             message: 'activated offer'
         };
     }
 };
 RestaurantsService = __decorate([
     (0, common_1.Injectable)(),
-    __param(0, (0, mongoose_1.InjectModel)('Restaurant')),
-    __param(1, (0, mongoose_1.InjectModel)('UserOffer')),
-    __param(2, (0, common_1.Inject)((0, common_1.forwardRef)(() => users_service_1.UsersService))),
-    __metadata("design:paramtypes", [mongoose_2.Model,
-        mongoose_2.Model,
+    __param(0, (0, typeorm_1.InjectRepository)(typeorm_3.Restaurants)),
+    __param(1, (0, typeorm_1.InjectRepository)(typeorm_4.Offers)),
+    __param(2, (0, typeorm_1.InjectRepository)(typeorm_5.UsersOffers)),
+    __param(3, (0, common_1.Inject)((0, common_1.forwardRef)(() => users_service_1.UsersService))),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         users_service_1.UsersService])
 ], RestaurantsService);
 exports.RestaurantsService = RestaurantsService;

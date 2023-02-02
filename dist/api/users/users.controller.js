@@ -37,7 +37,7 @@ let UsersController = class UsersController {
         };
     }
     async findOne(id) {
-        return this.userService.findByUserId(id);
+        return this.userService.findByUserId(parseInt(id));
     }
     async findSecond(id) {
         console.log(id);

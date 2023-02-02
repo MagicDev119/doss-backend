@@ -10,12 +10,12 @@ declare const RestaurantSchema: mongoose.Schema<any, mongoose.Model<any, any, an
     };
 }>, {
     name: string;
-    description: string;
-    image: string;
-    available: number;
     expireDate: Date;
     offer: string;
+    image: string;
+    description: string;
     activator: mongoose.Types.ObjectId;
+    available: number;
     activatedAt: Date;
 }>;
 export default RestaurantSchema;

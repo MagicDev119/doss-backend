@@ -32,12 +32,12 @@ export declare class AuthController {
         };
         user: {
             email: string;
-            id: string;
-            phoneNumber: string;
+            id: number;
+            phone_number: string;
             fullName: string;
             stripeCustomerId: string;
             subscriptionPlan: string;
-            subscriptionStart: string;
+            subscriptionStart: Date;
         };
         message?: undefined;
     }>;
@@ -63,8 +63,8 @@ export declare class AuthController {
     } | {
         status: number;
         data: {
-            id: string;
-            phoneNumber: string;
+            id: number;
+            phone_number: string;
         };
         message: string;
     }>;

@@ -42,12 +42,12 @@ export class EventsController {
   @Patch('/:id/attend')
   async changeEventState(@Param('id') id: string, @Req() req: any, @Body() body: any) {
     const userId = req.user.id;
-    return this.eventsService.changeState(id, userId, +body.state)
+    return this.eventsService.changeState(parseInt(id), userId, +body.state)
   }
 
   @Patch('/:attendId/cancel_attend')
   async cancelAttendEvent(@Param('attendId') attendId: string, @Req() req: any) {
     const userId = req.user.id;
-    return this.eventsService.cancelAttend(attendId, userId)
+    return this.eventsService.cancelAttend(parseInt(attendId), userId)
   }
 }

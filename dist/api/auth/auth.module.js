@@ -13,11 +13,11 @@ const auth_service_1 = require("./auth.service");
 const local_strategy_1 = require("./local.strategy");
 const passport_1 = require("@nestjs/passport");
 const jwt_1 = require("@nestjs/jwt");
-const mongoose_1 = require("@nestjs/mongoose");
-const user_schema_1 = require("../users/model/user.schema");
 const jwt_strategy_1 = require("./jwt.strategy");
 const auth_controller_1 = require("./auth.controller");
 const jwt_refresh_token_strategy_1 = require("./jwt-refresh-token.strategy");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("../../typeorm");
 const nestjs_twilio_1 = require("nestjs-twilio");
 let AuthModule = class AuthModule {
 };
@@ -25,7 +25,7 @@ AuthModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: "User", schema: user_schema_1.default }]),
+            typeorm_1.TypeOrmModule.forFeature([typeorm_2.Users]),
             users_module_1.UsersModule,
             passport_1.PassportModule,
             jwt_1.JwtModule.register({}),

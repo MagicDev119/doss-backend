@@ -11,20 +11,23 @@ import {
   Inject,
 } from '@nestjs/common';
 
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+// import { Model } from 'mongoose';
+// import { InjectModel } from '@nestjs/mongoose';
 
 import { CreateCouponDto } from './dto/create-coupon.dto';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
-import { Coupon } from '../shared/types/coupon';
+// import { Coupon } from '../shared/types/coupon';
+import { Referrals } from 'src/typeorm';
 import { UsersService } from '../users/users.service';
 import { CreateCustomerDto } from '../users/dto/create-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class CouponService {
 
   constructor(
-    @InjectModel('Coupon') private couponModel: Model<Coupon>,
+    @InjectRepository(Referrals) private readonly referralsRepository: Repository<Referrals>,
     private usersService: UsersService
   ) { }
   create(createCouponDto: CreateCouponDto) {
@@ -40,7 +43,7 @@ export class CouponService {
   }
 
   async findOneByCode(customer: CreateCustomerDto) {
-    const coupon = await this.couponModel.findOne({ code: customer.code });
+    const coupon = await this.referralsRepository.findOneBy({ code: customer.code });
     if (!coupon) {
       return {status: -3, error: 'Invalid coupon'};
     }
